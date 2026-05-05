@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Science Foundations - Quiz Slides</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+        }
+
+        .slide.active {
+            display: flex;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-content {
+            background: white;
+            border-radius: 20px;
+            padding: 60px;
+            max-width: 1000px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .slide-number {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .question-text {
+            font-size: 32px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: grid;
+            gap: 20px;
+        }
+
+        .option {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-radius: 12px;
+            font-size: 22px;
+            border: 3px solid #e9ecef;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-letter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #6c757d;
+            color: white;
+            border-radius: 50%;
+            font-weight: 600;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .option.correct {
+            background: #e8f5e9;
+            border-color: #4CAF50;
+            border-width: 4px;
+        }
+
+        .option.correct .option-letter {
+            background: #4CAF50;
+        }
+
+        .slide.answer-slide .option.correct {
+            animation: pulse 1s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #667eea;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-type-badge {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .slide.question-slide .slide-type-badge {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .slide.answer-slide .slide-type-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .title-slide {
+            text-align: center;
+        }
+
+        .title-slide h1 {
+            font-size: 56px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .title-slide p {
+            font-size: 24px;
+            color: #6c757d;
+            margin-bottom: 40px;
+        }
+
+        .title-slide .stats {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .title-slide .stat {
+            text-align: center;
+        }
+
+        .title-slide .stat-number {
+            font-size: 48px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .title-slide .stat-label {
+            font-size: 18px;
+            color: #6c757d;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Title Slide -->
+        <div class="slide active">
+            <div class="slide-content title-slide">
+                <h1>Data Science Foundations</h1>
+                <p>University of Washington - Quiz Review</p>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-number">20</div>
+                        <div class="stat-label">Questions</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">40</div>
+                        <div class="stat-label">Slides</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 1 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">1 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What is the derivative of x² with respect to x?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> x</div>
+                    <div class="option"><span class="option-letter">B</span> 2x</div>
+                    <div class="option"><span class="option-letter">C</span> x²</div>
+                    <div class="option"><span class="option-letter">D</span> 2</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 1 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">2 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What is the derivative of x² with respect to x?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> x</div>
+                    <div class="option correct"><span class="option-letter">B</span> 2x</div>
+                    <div class="option"><span class="option-letter">C</span> x²</div>
+                    <div class="option"><span class="option-letter">D</span> 2</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 2 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">3 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">In linear algebra, what does a matrix with the same number of rows and columns called?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> Rectangular matrix</div>
+                    <div class="option"><span class="option-letter">B</span> Square matrix</div>
+                    <div class="option"><span class="option-letter">C</span> Identity matrix</div>
+                    <div class="option"><span class="option-letter">D</span> Diagonal matrix</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 2 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">4 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">In linear algebra, what does a matrix with the same number of rows and columns called?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> Rectangular matrix</div>
+                    <div class="option correct"><span class="option-letter">B</span> Square matrix</div>
+                    <div class="option"><span class="option-letter">C</span> Identity matrix</div>
+                    <div class="option"><span class="option-letter">D</span> Diagonal matrix</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 3 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">5 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which Python data structure is ordered, mutable, and allows duplicate elements?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> Set</div>
+                    <div class="option"><span class="option-letter">B</span> Dictionary</div>
+                    <div class="option"><span class="option-letter">C</span> List</div>
+                    <div class="option"><span class="option-letter">D</span> Tuple</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 3 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">6 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which Python data structure is ordered, mutable, and allows duplicate elements?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> Set</div>
+                    <div class="option"><span class="option-letter">B</span> Dictionary</div>
+                    <div class="option correct"><span class="option-letter">C</span> List</div>
+                    <div class="option"><span class="option-letter">D</span> Tuple</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 4 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">7 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What is the mean of the following dataset: 2, 4, 6, 8, 10?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> 5</div>
+                    <div class="option"><span class="option-letter">B</span> 6</div>
+                    <div class="option"><span class="option-letter">C</span> 7</div>
+                    <div class="option"><span class="option-letter">D</span> 8</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 4 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">8 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What is the mean of the following dataset: 2, 4, 6, 8, 10?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> 5</div>
+                    <div class="option correct"><span class="option-letter">B</span> 6</div>
+                    <div class="option"><span class="option-letter">C</span> 7</div>
+                    <div class="option"><span class="option-letter">D</span> 8</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 5 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">9 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What does the NumPy function np.mean() calculate?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> The median value of an array</div>
+                    <div class="option"><span class="option-letter">B</span> The average of array elements</div>
+                    <div class="option"><span class="option-letter">C</span> The mode of the array</div>
+                    <div class="option"><span class="option-letter">D</span> The sum of all array elements</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 5 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">10 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What does the NumPy function np.mean() calculate?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> The median value of an array</div>
+                    <div class="option correct"><span class="option-letter">B</span> The average of array elements</div>
+                    <div class="option"><span class="option-letter">C</span> The mode of the array</div>
+                    <div class="option"><span class="option-letter">D</span> The sum of all array elements</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 6 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">11 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">In Pandas, what method is used to remove rows with missing values?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> remove_na()</div>
+                    <div class="option"><span class="option-letter">B</span> dropna()</div>
+                    <div class="option"><span class="option-letter">C</span> delete_missing()</div>
+                    <div class="option"><span class="option-letter">D</span> fillna()</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 6 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">12 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">In Pandas, what method is used to remove rows with missing values?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> remove_na()</div>
+                    <div class="option correct"><span class="option-letter">B</span> dropna()</div>
+                    <div class="option"><span class="option-letter">C</span> delete_missing()</div>
+                    <div class="option"><span class="option-letter">D</span> fillna()</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 7 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">13 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which SQL clause is used to filter rows based on a condition?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> SELECT</div>
+                    <div class="option"><span class="option-letter">B</span> FROM</div>
+                    <div class="option"><span class="option-letter">C</span> WHERE</div>
+                    <div class="option"><span class="option-letter">D</span> ORDER BY</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 7 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">14 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which SQL clause is used to filter rows based on a condition?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> SELECT</div>
+                    <div class="option"><span class="option-letter">B</span> FROM</div>
+                    <div class="option correct"><span class="option-letter">C</span> WHERE</div>
+                    <div class="option"><span class="option-letter">D</span> ORDER BY</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 8 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">15 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What does API stand for?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> Application Programming Interface</div>
+                    <div class="option"><span class="option-letter">B</span> Advanced Programming Integration</div>
+                    <div class="option"><span class="option-letter">C</span> Automated Process Implementation</div>
+                    <div class="option"><span class="option-letter">D</span> Application Process Identifier</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 8 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">16 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What does API stand for?</div>
+                <div class="options">
+                    <div class="option correct"><span class="option-letter">A</span> Application Programming Interface</div>
+                    <div class="option"><span class="option-letter">B</span> Advanced Programming Integration</div>
+                    <div class="option"><span class="option-letter">C</span> Automated Process Implementation</div>
+                    <div class="option"><span class="option-letter">D</span> Application Process Identifier</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 9 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">17 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which measure of central tendency is most affected by outliers?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> Median</div>
+                    <div class="option"><span class="option-letter">B</span> Mode</div>
+                    <div class="option"><span class="option-letter">C</span> Mean</div>
+                    <div class="option"><span class="option-letter">D</span> Range</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 9 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">18 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which measure of central tendency is most affected by outliers?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> Median</div>
+                    <div class="option"><span class="option-letter">B</span> Mode</div>
+                    <div class="option correct"><span class="option-letter">C</span> Mean</div>
+                    <div class="option"><span class="option-letter">D</span> Range</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 10 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">19 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What is the standard deviation measuring in a dataset?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> The central value</div>
+                    <div class="option"><span class="option-letter">B</span> The most frequent value</div>
+                    <div class="option"><span class="option-letter">C</span> The spread or dispersion of values</div>
+                    <div class="option"><span class="option-letter">D</span> The total sum of values</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 10 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">20 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What is the standard deviation measuring in a dataset?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> The central value</div>
+                    <div class="option"><span class="option-letter">B</span> The most frequent value</div>
+                    <div class="option correct"><span class="option-letter">C</span> The spread or dispersion of values</div>
+                    <div class="option"><span class="option-letter">D</span> The total sum of values</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 11 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">21 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">In Python, which library is primarily used for numerical computing?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> Pandas</div>
+                    <div class="option"><span class="option-letter">B</span> NumPy</div>
+                    <div class="option"><span class="option-letter">C</span> Matplotlib</div>
+                    <div class="option"><span class="option-letter">D</span> Scikit-learn</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 11 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">22 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">In Python, which library is primarily used for numerical computing?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> Pandas</div>
+                    <div class="option correct"><span class="option-letter">B</span> NumPy</div>
+                    <div class="option"><span class="option-letter">C</span> Matplotlib</div>
+                    <div class="option"><span class="option-letter">D</span> Scikit-learn</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 12 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">23 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What type of chart is best for showing the distribution of a single continuous variable?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> Bar chart</div>
+                    <div class="option"><span class="option-letter">B</span> Pie chart</div>
+                    <div class="option"><span class="option-letter">C</span> Histogram</div>
+                    <div class="option"><span class="option-letter">D</span> Line chart</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 12 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">24 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What type of chart is best for showing the distribution of a single continuous variable?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> Bar chart</div>
+                    <div class="option"><span class="option-letter">B</span> Pie chart</div>
+                    <div class="option correct"><span class="option-letter">C</span> Histogram</div>
+                    <div class="option"><span class="option-letter">D</span> Line chart</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 13 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">25 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which SQL command is used to combine rows from two or more tables based on a related column?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> MERGE</div>
+                    <div class="option"><span class="option-letter">B</span> COMBINE</div>
+                    <div class="option"><span class="option-letter">C</span> JOIN</div>
+                    <div class="option"><span class="option-letter">D</span> UNION</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 13 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">26 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which SQL command is used to combine rows from two or more tables based on a related column?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> MERGE</div>
+                    <div class="option"><span class="option-letter">B</span> COMBINE</div>
+                    <div class="option correct"><span class="option-letter">C</span> JOIN</div>
+                    <div class="option"><span class="option-letter">D</span> UNION</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 14 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">27 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">In calculus, what is the integral of a constant c with respect to x?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> c</div>
+                    <div class="option"><span class="option-letter">B</span> cx + C</div>
+                    <div class="option"><span class="option-letter">C</span> 0</div>
+                    <div class="option"><span class="option-letter">D</span> x + C</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 14 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">28 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">In calculus, what is the integral of a constant c with respect to x?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> c</div>
+                    <div class="option correct"><span class="option-letter">B</span> cx + C</div>
+                    <div class="option"><span class="option-letter">C</span> 0</div>
+                    <div class="option"><span class="option-letter">D</span> x + C</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 15 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">29 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What is a vector in linear algebra?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> A single number</div>
+                    <div class="option"><span class="option-letter">B</span> An ordered list of numbers</div>
+                    <div class="option"><span class="option-letter">C</span> A two-dimensional array</div>
+                    <div class="option"><span class="option-letter">D</span> A function</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 15 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">30 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What is a vector in linear algebra?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> A single number</div>
+                    <div class="option correct"><span class="option-letter">B</span> An ordered list of numbers</div>
+                    <div class="option"><span class="option-letter">C</span> A two-dimensional array</div>
+                    <div class="option"><span class="option-letter">D</span> A function</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 16 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">31 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which Python keyword is used to define a function?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> function</div>
+                    <div class="option"><span class="option-letter">B</span> def</div>
+                    <div class="option"><span class="option-letter">C</span> func</div>
+                    <div class="option"><span class="option-letter">D</span> define</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 16 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">32 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which Python keyword is used to define a function?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> function</div>
+                    <div class="option correct"><span class="option-letter">B</span> def</div>
+                    <div class="option"><span class="option-letter">C</span> func</div>
+                    <div class="option"><span class="option-letter">D</span> define</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 17 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">33 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What is the median of the dataset: 1, 3, 5, 7, 9?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> 3</div>
+                    <div class="option"><span class="option-letter">B</span> 5</div>
+                    <div class="option"><span class="option-letter">C</span> 7</div>
+                    <div class="option"><span class="option-letter">D</span> 4</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 17 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">34 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">What is the median of the dataset: 1, 3, 5, 7, 9?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> 3</div>
+                    <div class="option correct"><span class="option-letter">B</span> 5</div>
+                    <div class="option"><span class="option-letter">C</span> 7</div>
+                    <div class="option"><span class="option-letter">D</span> 4</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 18 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">35 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which Matplotlib function is used to create a line plot?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> plt.line()</div>
+                    <div class="option"><span class="option-letter">B</span> plt.plot()</div>
+                    <div class="option"><span class="option-letter">C</span> plt.graph()</div>
+                    <div class="option"><span class="option-letter">D</span> plt.draw()</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 18 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">36 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which Matplotlib function is used to create a line plot?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> plt.line()</div>
+                    <div class="option correct"><span class="option-letter">B</span> plt.plot()</div>
+                    <div class="option"><span class="option-letter">C</span> plt.graph()</div>
+                    <div class="option"><span class="option-letter">D</span> plt.draw()</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 19 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">37 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">If you flip a fair coin twice, what is the probability of getting at least one head?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> 1/4</div>
+                    <div class="option"><span class="option-letter">B</span> 1/2</div>
+                    <div class="option"><span class="option-letter">C</span> 3/4</div>
+                    <div class="option"><span class="option-letter">D</span> 1</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 19 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">38 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">If you flip a fair coin twice, what is the probability of getting at least one head?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> 1/4</div>
+                    <div class="option"><span class="option-letter">B</span> 1/2</div>
+                    <div class="option correct"><span class="option-letter">C</span> 3/4</div>
+                    <div class="option"><span class="option-letter">D</span> 1</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 20 -->
+        <div class="slide question-slide">
+            <span class="slide-type-badge">Question</span>
+            <span class="slide-number">39 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which of the following is NOT typically considered a core skill for data scientists?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> Statistical analysis and probability</div>
+                    <div class="option"><span class="option-letter">B</span> Programming (Python or R)</div>
+                    <div class="option"><span class="option-letter">C</span> Graphic design for marketing materials</div>
+                    <div class="option"><span class="option-letter">D</span> Data visualization and communication</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer 20 -->
+        <div class="slide answer-slide">
+            <span class="slide-type-badge">✓ Answer</span>
+            <span class="slide-number">40 / 40</span>
+            <div class="slide-content">
+                <div class="question-text">Which of the following is NOT typically considered a core skill for data scientists?</div>
+                <div class="options">
+                    <div class="option"><span class="option-letter">A</span> Statistical analysis and probability</div>
+                    <div class="option"><span class="option-letter">B</span> Programming (Python or R)</div>
+                    <div class="option correct"><span class="option-letter">C</span> Graphic design for marketing materials</div>
+                    <div class="option"><span class="option-letter">D</span> Data visualization and communication</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Controls -->
+    <div class="controls">
+        <button class="control-btn" id="prevBtn">← Previous</button>
+        <button class="control-btn" id="nextBtn">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = n;
+            if (currentSlide >= slides.length) currentSlide = slides.length - 1;
+            if (currentSlide < 0) currentSlide = 0;
+            slides[currentSlide].classList.add('active');
+
+            // Update button states
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        // Event listeners
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            }
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>
