@@ -1,0 +1,81 @@
+{
+  "rules": {
+    "games": {
+      "$gameCode": {
+        ".read": "data.exists()",
+        ".write": "!data.exists() || data.child('hostId').val() === auth.uid",
+
+        "hostId": {
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        },
+
+        "status": {
+          ".validate": "newData.isString() && (newData.val() === 'waiting' || newData.val() === 'playing' || newData.val() === 'showing-scores' || newData.val() === 'ended')",
+          ".write": "data.parent().child('hostId').val() === auth.uid"
+        },
+
+        "currentQuestion": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100",
+          ".write": "data.parent().child('hostId').val() === auth.uid"
+        },
+
+        "timerStartedAt": {
+          ".validate": "newData.isNumber()",
+          ".write": "data.parent().child('hostId').val() === auth.uid"
+        },
+
+        "timerDuration": {
+          ".validate": "newData.isNumber() && newData.val() >= 3 && newData.val() <= 300"
+        },
+
+        "quizFile": {
+          ".validate": "newData.isString() && newData.val().matches(/^questions.*\\.json$/)"
+        },
+
+        "metadata": {
+          ".write": "data.parent().child('hostId').val() === auth.uid"
+        },
+
+        "players": {
+          "$playerId": {
+            ".write": "$playerId === auth.uid || data.parent().parent().child('hostId').val() === auth.uid",
+
+            "name": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 30"
+            },
+
+            "score": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000",
+              ".write": "data.parent().parent().parent().child('hostId').val() === auth.uid"
+            },
+
+            "connected": {
+              ".validate": "newData.isBoolean()"
+            },
+
+            "lastSeen": {
+              ".validate": "newData.isNumber()"
+            }
+          }
+        },
+
+        "answers": {
+          "$questionIndex": {
+            "$playerId": {
+              ".write": "$playerId === auth.uid",
+              ".validate": "newData.hasChildren(['answer', 'timestamp'])",
+
+              "answer": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3"
+              },
+
+              "timestamp": {
+                ".validate": "newData.isNumber()"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

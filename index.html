@@ -147,6 +147,7 @@
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
@@ -163,6 +164,7 @@
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
         const database = firebase.database();
 
         // Global variables
@@ -229,10 +231,6 @@
             return code;
         }
 
-        function generatePlayerId() {
-            return 'player_' + Math.random().toString(36).substr(2, 9) + Date.now();
-        }
-
         function showError(message) {
             const errorDisplay = document.getElementById('errorDisplay');
             errorDisplay.textContent = message;
@@ -242,24 +240,81 @@
             }, 5000);
         }
 
+        // Sanitize HTML to prevent XSS attacks
+        function sanitizeHTML(str) {
+            if (!str) return '';
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
+        }
+
+        // Input validation functions
+        const Validators = {
+            playerName: (name) => {
+                if (!name || !name.trim()) {
+                    return { valid: false, error: 'Please enter your name' };
+                }
+                if (name.length > 30) {
+                    return { valid: false, error: 'Name must be 30 characters or less' };
+                }
+                // Check for HTML tags
+                if (name !== name.replace(/<[^>]*>/g, '')) {
+                    return { valid: false, error: 'Name cannot contain HTML tags' };
+                }
+                return { valid: true, value: name.trim() };
+            },
+
+            timerDuration: (duration) => {
+                const num = parseInt(duration);
+                if (isNaN(num)) {
+                    return { valid: false, error: 'Timer duration must be a number' };
+                }
+                if (num < 3 || num > 300) {
+                    return { valid: false, error: 'Timer duration must be between 3 and 300 seconds' };
+                }
+                return { valid: true, value: num };
+            },
+
+            gameCode: (code) => {
+                if (!code || typeof code !== 'string') {
+                    return { valid: false, error: 'Invalid game code' };
+                }
+                const upperCode = code.toUpperCase();
+                if (!/^[A-Z0-9]{6}$/.test(upperCode)) {
+                    return { valid: false, error: 'Game code must be 6 alphanumeric characters' };
+                }
+                return { valid: true, value: upperCode };
+            },
+
+            answerIndex: (index) => {
+                if (!Number.isInteger(index)) {
+                    return { valid: false, error: 'Answer must be a number' };
+                }
+                if (index < 0 || index > 3) {
+                    return { valid: false, error: 'Answer must be between 0 and 3' };
+                }
+                return { valid: true, value: index };
+            }
+        };
+
         // Event Listeners for Role Selection
         document.getElementById('createGameBtn').addEventListener('click', async () => {
             // Get selected quiz
             selectedQuizFile = document.getElementById('quizSelector').value;
 
-            // Get timer duration
-            const timerInput = parseInt(document.getElementById('timerDurationInput').value);
-            if (timerInput < 3 || timerInput > 300) {
-                showError('Timer duration must be between 3 and 300 seconds');
+            // Get and validate timer duration
+            const timerInput = document.getElementById('timerDurationInput').value;
+            const timerValidation = Validators.timerDuration(timerInput);
+            if (!timerValidation.valid) {
+                showError(timerValidation.error);
                 return;
             }
-            timerDuration = timerInput;
+            timerDuration = timerValidation.value;
 
             const loaded = await loadQuestions(selectedQuizFile);
             if (!loaded) return;
 
             isHost = true;
-            playerId = generatePlayerId();
             gameCode = generateGameCode();
 
             createGame();
@@ -342,7 +397,7 @@
                     li.className = 'player-item';
                     if (!player.connected) li.classList.add('disconnected');
                     li.innerHTML = `
-                        <span class="player-name">${player.name}</span>
+                        <span class="player-name">${sanitizeHTML(player.name)}</span>
                         <span class="player-score">${player.connected ? 'Ready' : 'Disconnected'}</span>
                     `;
                     listEl.appendChild(li);
@@ -356,17 +411,15 @@
         // === PLAYER FUNCTIONALITY ===
 
         async function joinGame() {
-            const name = document.getElementById('playerNameInput').value.trim();
+            const nameInput = document.getElementById('playerNameInput').value;
 
-            if (!name) {
-                showError('Please enter your name');
+            // Validate player name
+            const nameValidation = Validators.playerName(nameInput);
+            if (!nameValidation.valid) {
+                showError(nameValidation.error);
                 return;
             }
-
-            if (name.length > 30) {
-                showError('Name must be 30 characters or less');
-                return;
-            }
+            const name = nameValidation.value;
 
             try {
                 // Check if game exists
@@ -392,8 +445,7 @@
                 // Get timer duration from game settings
                 timerDuration = gameData.timerDuration || 30;
 
-                // Generate player ID
-                playerId = generatePlayerId();
+                // Player ID already set from authentication
                 playerName = name;
 
                 // Check for duplicate names and modify if needed
@@ -665,7 +717,15 @@
         // === ANSWER SUBMISSION ===
 
         async function submitAnswer(answerIndex) {
-            playerAnswer = answerIndex;
+            // Validate answer index
+            const answerValidation = Validators.answerIndex(answerIndex);
+            if (!answerValidation.valid) {
+                console.error('Invalid answer index:', answerIndex);
+                showError(answerValidation.error);
+                return;
+            }
+
+            playerAnswer = answerValidation.value;
 
             // Update button styling - remove old selection, add new
             const answerButtons = document.querySelectorAll('.answer-btn');
@@ -863,7 +923,7 @@
                 div.innerHTML = `
                     <div>
                         <span class="rank-number">#${index + 1}</span>
-                        <span class="player-name">${player.name}</span>
+                        <span class="player-name">${sanitizeHTML(player.name)}</span>
                         ${!player.connected ? ' <em>(Disconnected)</em>' : ''}
                     </div>
                     <span class="player-score">${player.score || 0} pts</span>
@@ -894,7 +954,7 @@
             if (sortedPlayers.length > 0) {
                 const winner = sortedPlayers[0][1];
                 document.getElementById('winnerAnnouncement').innerHTML =
-                    `<h2>🏆 Winner: ${winner.name}</h2><p>Score: ${winner.score || 0} points</p>`;
+                    `<h2>🏆 Winner: ${sanitizeHTML(winner.name)}</h2><p>Score: ${winner.score || 0} points</p>`;
             }
 
             // Display final leaderboard
@@ -955,14 +1015,24 @@
             window.location.href = window.location.pathname;
         });
 
-        // Initialize app
-        (function init() {
-            // Check URL for game code
-            const urlParams = new URLSearchParams(window.location.search);
-            const codeFromUrl = urlParams.get('game');
+        // Initialize app with authentication
+        (async function init() {
+            try {
+                // Sign in anonymously to get auth.uid
+                const userCredential = await auth.signInAnonymously();
+                playerId = userCredential.user.uid;
+                console.log('Authenticated with ID:', playerId);
 
-            if (codeFromUrl) {
-                initiateJoinGame(codeFromUrl);
+                // Check URL for game code
+                const urlParams = new URLSearchParams(window.location.search);
+                const codeFromUrl = urlParams.get('game');
+
+                if (codeFromUrl) {
+                    initiateJoinGame(codeFromUrl);
+                }
+            } catch (error) {
+                console.error('Authentication error:', error);
+                showError('Failed to initialize app. Please refresh the page.');
             }
         })();
     </script>
