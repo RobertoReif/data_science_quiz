@@ -53,12 +53,25 @@ activeListeners.serverTimeOffset.on('value', (snap) => {
 // Monitor connection status
 const connectedRef = database.ref('.info/connected');
 activeListeners.connectionStatus = connectedRef;
+let offlineTimeout = null;
+
 connectedRef.on('value', (snap) => {
     const offlineDisplay = document.getElementById('offlineDisplay');
+
     if (snap.val() === true) {
+        // Connected - clear any pending timeout and hide message
+        if (offlineTimeout) {
+            clearTimeout(offlineTimeout);
+            offlineTimeout = null;
+        }
         offlineDisplay.classList.add('hidden');
     } else {
-        offlineDisplay.classList.remove('hidden');
+        // Disconnected - wait 2 seconds before showing message
+        // This prevents the flash during initial page load
+        if (offlineTimeout) clearTimeout(offlineTimeout);
+        offlineTimeout = setTimeout(() => {
+            offlineDisplay.classList.remove('hidden');
+        }, 2000);
     }
 });
 
