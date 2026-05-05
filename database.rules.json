@@ -2,43 +2,46 @@
   "rules": {
     "games": {
       "$gameCode": {
-        ".read": "data.exists()",
-        ".write": "!data.exists() || data.child('hostId').val() === auth.uid",
+        ".read": "auth != null",
+        ".write": "!data.exists() || root.child('games').child($gameCode).child('hostId').val() === auth.uid",
 
         "hostId": {
-          ".validate": "newData.isString() && newData.val() === auth.uid"
+          ".validate": "newData.isString() && newData.val() === auth.uid",
+          ".write": "!data.exists()"
         },
 
         "status": {
           ".validate": "newData.isString() && (newData.val() === 'waiting' || newData.val() === 'playing' || newData.val() === 'showing-scores' || newData.val() === 'ended')",
-          ".write": "data.parent().child('hostId').val() === auth.uid"
+          ".write": "!data.exists() || root.child('games').child($gameCode).child('hostId').val() === auth.uid"
         },
 
         "currentQuestion": {
           ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100",
-          ".write": "data.parent().child('hostId').val() === auth.uid"
+          ".write": "!data.exists() || root.child('games').child($gameCode).child('hostId').val() === auth.uid"
         },
 
         "timerStartedAt": {
-          ".validate": "newData.isNumber()",
-          ".write": "data.parent().child('hostId').val() === auth.uid"
+          ".validate": "newData.isNumber() || newData.val() === null",
+          ".write": "!data.exists() || root.child('games').child($gameCode).child('hostId').val() === auth.uid"
         },
 
         "timerDuration": {
-          ".validate": "newData.isNumber() && newData.val() >= 3 && newData.val() <= 300"
+          ".validate": "newData.isNumber() && newData.val() >= 3 && newData.val() <= 300",
+          ".write": "!data.exists() || root.child('games').child($gameCode).child('hostId').val() === auth.uid"
         },
 
         "quizFile": {
-          ".validate": "newData.isString() && newData.val().matches(/^questions.*\\.json$/)"
+          ".validate": "newData.isString() && newData.val().matches(/^questions.*\\.json$/)",
+          ".write": "!data.exists()"
         },
 
         "metadata": {
-          ".write": "data.parent().child('hostId').val() === auth.uid"
+          ".write": "!data.exists() || root.child('games').child($gameCode).child('hostId').val() === auth.uid"
         },
 
         "players": {
           "$playerId": {
-            ".write": "$playerId === auth.uid || data.parent().parent().child('hostId').val() === auth.uid",
+            ".write": "$playerId === auth.uid || root.child('games').child($gameCode).child('hostId').val() === auth.uid",
 
             "name": {
               ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 30"
@@ -46,7 +49,7 @@
 
             "score": {
               ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000",
-              ".write": "data.parent().parent().parent().child('hostId').val() === auth.uid"
+              ".write": "root.child('games').child($gameCode).child('hostId').val() === auth.uid"
             },
 
             "connected": {

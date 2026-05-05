@@ -27,7 +27,7 @@
             </div>
 
             <div class="text-center">
-                <button id="createGameBtn">Create Game</button>
+                <button id="createGameBtn" disabled>Create Game</button>
             </div>
         </div>
 
@@ -666,9 +666,9 @@
                         activeTimerInterval = null;
                     }
 
-                    // Host: Auto-advance after 3 seconds (to show correct/incorrect feedback)
+                    // Host: Auto-advance after 1 second (to show correct/incorrect feedback)
                     if (isHost && !isAdvancing) {
-                        setTimeout(() => advanceToNextQuestion(), 3000);
+                        setTimeout(() => advanceToNextQuestion(), 1000);
                     }
                 }
             };
@@ -1022,6 +1022,9 @@
                 const userCredential = await auth.signInAnonymously();
                 playerId = userCredential.user.uid;
                 console.log('Authenticated with ID:', playerId);
+
+                // Enable the Create Game button now that we're authenticated
+                document.getElementById('createGameBtn').disabled = false;
 
                 // Check URL for game code
                 const urlParams = new URLSearchParams(window.location.search);
