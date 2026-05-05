@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Science Quiz Game</title>
+    <style>
+        /* Roberto Reif Style Guide */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 80px 100px;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 40px 20px;
+            }
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 400;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 400;
+            color: #333333;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin-bottom: 20px;
+            color: #666666;
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+        }
+
+        /* Buttons */
+        button {
+            background-color: #333333;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            padding: 14px 32px;
+            font-size: 1rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 44px;
+        }
+
+        button:hover {
+            background-color: #1a1a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        button.secondary {
+            background-color: #ffffff;
+            color: #333333;
+            border: 2px solid #e0e0e0;
+        }
+
+        button.secondary:hover {
+            border-color: #333333;
+            background-color: #f5f5f5;
+        }
+
+        /* Input fields */
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 1rem;
+            font-family: inherit;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            transition: border-color 0.3s ease;
+            min-height: 44px;
+            background-color: #ffffff;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #333333;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        /* Screen Management */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Layout helpers */
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+
+        .mb-40 {
+            margin-bottom: 40px;
+        }
+
+        .mt-40 {
+            margin-top: 40px;
+        }
+
+        /* Answer buttons */
+        .answer-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        @media (min-width: 641px) {
+            .answer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .answer-btn {
+            background-color: #ffffff;
+            color: #333333;
+            border: 2px solid #e0e0e0;
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 1rem;
+            min-height: 60px;
+            transition: all 0.3s ease;
+        }
+
+        .answer-btn:hover:not(:disabled) {
+            border-color: #333333;
+            background-color: #f5f5f5;
+            transform: translateY(-2px);
+        }
+
+        .answer-btn.selected {
+            border-color: #333333;
+            background-color: #f5f5f5;
+        }
+
+        .answer-btn.correct {
+            border-color: #4CAF50;
+            background-color: #f1f8f4;
+        }
+
+        .answer-btn.incorrect {
+            border-color: #e57373;
+            background-color: #fef5f5;
+        }
+
+        /* Timer */
+        .timer {
+            font-size: 2rem;
+            font-weight: 400;
+            color: #1a1a1a;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .timer.warning {
+            color: #e57373;
+        }
+
+        /* Player list */
+        .player-list {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .player-item {
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .player-item.disconnected {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        .player-name {
+            font-weight: 400;
+        }
+
+        .player-score {
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .score-change {
+            color: #4CAF50;
+            font-size: 0.9rem;
+            margin-left: 8px;
+        }
+
+        /* Leaderboard */
+        .leaderboard {
+            margin-bottom: 40px;
+        }
+
+        .leaderboard-item {
+            padding: 16px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .leaderboard-item.rank-1 {
+            border-color: #FFD700;
+            background-color: #FFFDF0;
+        }
+
+        .leaderboard-item.rank-2 {
+            border-color: #C0C0C0;
+            background-color: #F9F9F9;
+        }
+
+        .leaderboard-item.rank-3 {
+            border-color: #CD7F32;
+            background-color: #FFF8F0;
+        }
+
+        .rank-number {
+            font-weight: 500;
+            font-size: 1.2rem;
+            margin-right: 16px;
+            min-width: 30px;
+        }
+
+        /* Game code display */
+        .game-code-display {
+            background-color: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .game-code {
+            font-size: 2.5rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            letter-spacing: 0.1em;
+            margin: 10px 0;
+        }
+
+        .share-url {
+            font-size: 0.9rem;
+            color: #666666;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+
+        /* Status messages */
+        .status-message {
+            padding: 16px 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .status-message.info {
+            background-color: #E3F2FD;
+            border: 1px solid #90CAF9;
+            color: #1976D2;
+        }
+
+        .status-message.warning {
+            background-color: #FFF3E0;
+            border: 1px solid #FFB74D;
+            color: #F57C00;
+        }
+
+        .status-message.error {
+            background-color: #FFEBEE;
+            border: 1px solid #EF5350;
+            color: #C62828;
+        }
+
+        .status-message.success {
+            background-color: #E8F5E9;
+            border: 1px solid #66BB6A;
+            color: #2E7D32;
+        }
+
+        /* Question counter */
+        .question-counter {
+            text-align: center;
+            color: #666666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        /* Button groups */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .button-group button {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        @media (max-width: 640px) {
+            .button-group {
+                flex-direction: column;
+            }
+            .button-group button {
+                width: 100%;
+            }
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Role Selection Screen -->
+        <div id="roleScreen" class="screen active">
+            <h1 class="text-center">Data Science Quiz</h1>
+            <p class="text-center mb-40">Test your knowledge with friends in real-time!</p>
+
+            <div class="mb-20">
+                <label for="quizSelector">Select Quiz:</label>
+                <select id="quizSelector">
+                    <option value="questions-foundations.json">Data Science Foundations - UW (20 questions)</option>
+                    <option value="questions.json">Data Science (20 questions)</option>
+                </select>
+            </div>
+
+            <div class="mb-20">
+                <label for="timerDurationInput">Timer Duration (seconds):</label>
+                <input type="number" id="timerDurationInput" value="30" min="3" max="300" step="1">
+            </div>
+
+            <div class="button-group">
+                <button id="createGameBtn">Create Game</button>
+                <button id="joinGameBtn" class="secondary">Join Game</button>
+            </div>
+        </div>
+
+        <!-- Host: Game Creation Screen -->
+        <div id="hostCreateScreen" class="screen">
+            <h1 class="text-center">Create Game</h1>
+            <div class="game-code-display">
+                <p>Game Code</p>
+                <div class="game-code" id="gameCodeDisplay">------</div>
+                <p class="share-url">Share this URL: <span id="shareUrlDisplay"></span></p>
+                <button id="copyUrlBtn" class="secondary mt-40">Copy URL</button>
+            </div>
+
+            <h3>Players Joined (<span id="playerCountDisplay">0</span>)</h3>
+            <ul id="hostPlayerList" class="player-list mb-40"></ul>
+
+            <button id="startGameBtn" disabled>Start Game</button>
+            <button id="cancelHostBtn" class="secondary mt-40">Cancel</button>
+        </div>
+
+        <!-- Player: Join Game Screen -->
+        <div id="playerJoinScreen" class="screen">
+            <h1 class="text-center">Join Game</h1>
+            <div id="joinStatus" class="mb-20"></div>
+            <div class="mb-20">
+                <label for="playerNameInput">Your Name</label>
+                <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="30">
+            </div>
+            <button id="submitJoinBtn">Join Game</button>
+            <button id="cancelJoinBtn" class="secondary mt-40">Back</button>
+
+            <div id="waitingArea" class="hidden mt-40">
+                <div class="status-message info">Waiting for host to start the game...</div>
+                <h3>Players in lobby:</h3>
+                <ul id="playerLobbyList" class="player-list"></ul>
+            </div>
+        </div>
+
+        <!-- Game Screen (Both Host and Players) -->
+        <div id="gameScreen" class="screen">
+            <div class="question-counter" id="questionCounter">Question 1 of 10</div>
+
+            <div class="timer" id="timerDisplay">30</div>
+
+            <h2 id="questionText" class="mb-40">Question will appear here...</h2>
+
+            <div class="answer-grid" id="answerGrid">
+                <button class="answer-btn" data-answer="0">Option A</button>
+                <button class="answer-btn" data-answer="1">Option B</button>
+                <button class="answer-btn" data-answer="2">Option C</button>
+                <button class="answer-btn" data-answer="3">Option D</button>
+            </div>
+
+            <div id="answerStatus" class="status-message hidden"></div>
+
+            <!-- Host controls -->
+            <div id="hostControls" class="hidden">
+                <div class="status-message info mb-20">
+                    <span id="answeredCount">0</span> of <span id="totalPlayers">0</span> players answered
+                </div>
+                <button id="nextQuestionBtn" class="hidden">Next Question</button>
+            </div>
+        </div>
+
+        <!-- Score Display Screen (After Each Question) -->
+        <div id="scoreScreen" class="screen">
+            <h1 class="text-center mb-20">Question Results</h1>
+
+            <div id="correctAnswerDisplay" class="status-message success mb-40"></div>
+
+            <h2 class="mb-20">Current Standings</h2>
+            <div id="currentLeaderboard" class="leaderboard"></div>
+
+            <!-- Host controls -->
+            <div id="scoreHostControls" class="hidden">
+                <button id="continueBtn">Continue to Next Question</button>
+            </div>
+
+            <!-- Player waiting -->
+            <div id="scorePlayerWaiting" class="hidden">
+                <div class="status-message info">Waiting for host to continue...</div>
+            </div>
+        </div>
+
+        <!-- Final Results Screen -->
+        <div id="resultsScreen" class="screen">
+            <h1 class="text-center mb-40">Final Results</h1>
+
+            <div id="winnerAnnouncement" class="status-message success mb-40"></div>
+
+            <div id="finalLeaderboard" class="leaderboard"></div>
+
+            <!-- Host controls -->
+            <div id="resultsHostControls" class="hidden">
+                <button id="newGameBtn">Create New Game</button>
+            </div>
+
+            <!-- Player view -->
+            <div id="resultsPlayerView" class="hidden">
+                <div class="status-message info mt-40">Thanks for playing!</div>
+            </div>
+        </div>
+
+        <!-- Error/Offline Messages -->
+        <div id="errorDisplay" class="hidden status-message error"></div>
+        <div id="offlineDisplay" class="hidden status-message warning">You are offline. Reconnecting...</div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // Firebase Configuration (User needs to replace with their own)
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4847S6PuTcskb6du7Y0dCt7uh05zqmU0",
+            authDomain: "data-science-quiz-77978.firebaseapp.com",
+            databaseURL: "https://data-science-quiz-77978-default-rtdb.firebaseio.com",
+            projectId: "data-science-quiz-77978",
+            storageBucket: "data-science-quiz-77978.firebasestorage.app",
+            messagingSenderId: "392795527631",
+            appId: "1:392795527631:web:a96de2281136ccf8b01aba"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Global variables
+        let gameCode = null;
+        let playerId = null;
+        let playerName = null;
+        let isHost = false;
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let serverTimeOffset = 0;
+        let playerAnswer = null;
+        let isAdvancing = false;
+        let selectedQuizFile = 'questions-foundations.json';
+        let timerDuration = 30; // Default 30 seconds
+        let currentTimerStart = null; // Track current timer to prevent duplicates
+        let activeTimerInterval = null; // Track single active timer interval
+
+        // Calculate server time offset
+        database.ref('.info/serverTimeOffset').on('value', (snap) => {
+            serverTimeOffset = snap.val() || 0;
+        });
+
+        // Monitor connection status
+        const connectedRef = database.ref('.info/connected');
+        connectedRef.on('value', (snap) => {
+            const offlineDisplay = document.getElementById('offlineDisplay');
+            if (snap.val() === true) {
+                offlineDisplay.classList.add('hidden');
+            } else {
+                offlineDisplay.classList.remove('hidden');
+            }
+        });
+
+        // Load questions from JSON
+        async function loadQuestions(filename = 'questions.json') {
+            try {
+                const response = await fetch(`./${filename}`);
+                if (!response.ok) throw new Error('Failed to load questions');
+                const data = await response.json();
+                questions = data.questions;
+                return true;
+            } catch (error) {
+                showError(`Could not load quiz questions from ${filename}. Please refresh the page.`);
+                console.error('Error loading questions:', error);
+                return false;
+            }
+        }
+
+        // Screen management
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Utility functions
+        function generateGameCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        function generatePlayerId() {
+            return 'player_' + Math.random().toString(36).substr(2, 9) + Date.now();
+        }
+
+        function showError(message) {
+            const errorDisplay = document.getElementById('errorDisplay');
+            errorDisplay.textContent = message;
+            errorDisplay.classList.remove('hidden');
+            setTimeout(() => {
+                errorDisplay.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Event Listeners for Role Selection
+        document.getElementById('createGameBtn').addEventListener('click', async () => {
+            // Get selected quiz
+            selectedQuizFile = document.getElementById('quizSelector').value;
+
+            // Get timer duration
+            const timerInput = parseInt(document.getElementById('timerDurationInput').value);
+            if (timerInput < 3 || timerInput > 300) {
+                showError('Timer duration must be between 3 and 300 seconds');
+                return;
+            }
+            timerDuration = timerInput;
+
+            const loaded = await loadQuestions(selectedQuizFile);
+            if (!loaded) return;
+
+            isHost = true;
+            playerId = generatePlayerId();
+            gameCode = generateGameCode();
+
+            createGame();
+        });
+
+        document.getElementById('joinGameBtn').addEventListener('click', () => {
+            // Check if game code is in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const codeFromUrl = urlParams.get('game');
+
+            if (codeFromUrl) {
+                gameCode = codeFromUrl.toUpperCase();
+                showScreen('playerJoinScreen');
+                document.getElementById('joinStatus').innerHTML =
+                    `<div class="status-message info">Joining game: ${gameCode}</div>`;
+            } else {
+                showError('No game code found. Please use the link provided by the host.');
+            }
+        });
+
+        // === HOST FUNCTIONALITY ===
+
+        async function createGame() {
+            try {
+                // Check if game code already exists
+                const gameSnapshot = await database.ref(`games/${gameCode}`).once('value');
+                if (gameSnapshot.exists()) {
+                    // Generate new code if collision
+                    gameCode = generateGameCode();
+                    return createGame();
+                }
+
+                // Create game in Firebase
+                await database.ref(`games/${gameCode}`).set({
+                    hostId: playerId,
+                    status: 'waiting',
+                    currentQuestion: 0,
+                    timerStartedAt: null,
+                    quizFile: selectedQuizFile,
+                    timerDuration: timerDuration,
+                    metadata: {
+                        totalQuestions: questions.length,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    }
+                });
+
+                // Add host as first player
+                playerName = 'Host';
+                await database.ref(`games/${gameCode}/players/${playerId}`).set({
+                    name: playerName,
+                    score: 0,
+                    connected: true
+                });
+
+                // Set up disconnect handler
+                setupDisconnectHandler();
+
+                // Display game code and URL
+                document.getElementById('gameCodeDisplay').textContent = gameCode;
+                const shareUrl = `${window.location.origin}${window.location.pathname}?game=${gameCode}`;
+                document.getElementById('shareUrlDisplay').textContent = shareUrl;
+
+                showScreen('hostCreateScreen');
+
+                // Listen for players joining
+                listenForPlayers();
+
+            } catch (error) {
+                console.error('Error creating game:', error);
+                showError('Failed to create game. Please try again.');
+            }
+        }
+
+        function listenForPlayers() {
+            database.ref(`games/${gameCode}/players`).on('value', (snapshot) => {
+                const players = snapshot.val() || {};
+                const playerCount = Object.keys(players).length;
+
+                document.getElementById('playerCountDisplay').textContent = playerCount;
+
+                // Update player list
+                const listEl = document.getElementById('hostPlayerList');
+                listEl.innerHTML = '';
+
+                Object.entries(players).forEach(([id, player]) => {
+                    const li = document.createElement('li');
+                    li.className = 'player-item';
+                    if (!player.connected) li.classList.add('disconnected');
+                    li.innerHTML = `
+                        <span class="player-name">${player.name}</span>
+                        <span class="player-score">${player.connected ? 'Ready' : 'Disconnected'}</span>
+                    `;
+                    listEl.appendChild(li);
+                });
+
+                // Enable start button if at least 1 player
+                document.getElementById('startGameBtn').disabled = playerCount < 1;
+            });
+        }
+
+        // === PLAYER FUNCTIONALITY ===
+
+        async function joinGame() {
+            const name = document.getElementById('playerNameInput').value.trim();
+
+            if (!name) {
+                showError('Please enter your name');
+                return;
+            }
+
+            if (name.length > 30) {
+                showError('Name must be 30 characters or less');
+                return;
+            }
+
+            try {
+                // Check if game exists
+                const gameSnapshot = await database.ref(`games/${gameCode}`).once('value');
+                if (!gameSnapshot.exists()) {
+                    showError('Game not found. Please check the game code.');
+                    return;
+                }
+
+                const gameData = gameSnapshot.val();
+
+                // Check if game already started
+                if (gameData.status !== 'waiting') {
+                    showError('This game has already started. You cannot join.');
+                    return;
+                }
+
+                // Load the quiz file used by this game
+                selectedQuizFile = gameData.quizFile || 'questions.json';
+                const loaded = await loadQuestions(selectedQuizFile);
+                if (!loaded) return;
+
+                // Get timer duration from game settings
+                timerDuration = gameData.timerDuration || 30;
+
+                // Generate player ID
+                playerId = generatePlayerId();
+                playerName = name;
+
+                // Check for duplicate names and modify if needed
+                const players = gameData.players || {};
+                let finalName = name;
+                let counter = 2;
+                while (Object.values(players).some(p => p.name === finalName)) {
+                    finalName = `${name} ${counter}`;
+                    counter++;
+                }
+                playerName = finalName;
+
+                // Add player to game
+                await database.ref(`games/${gameCode}/players/${playerId}`).set({
+                    name: playerName,
+                    score: 0,
+                    connected: true
+                });
+
+                // Set up disconnect handler
+                setupDisconnectHandler();
+
+                // Show waiting area
+                document.getElementById('waitingArea').classList.remove('hidden');
+                document.getElementById('submitJoinBtn').disabled = true;
+
+                // Listen for other players and game start
+                listenForLobbyUpdates();
+                listenForGameStart();
+
+            } catch (error) {
+                console.error('Error joining game:', error);
+                showError('Failed to join game. Please try again.');
+            }
+        }
+
+        function listenForLobbyUpdates() {
+            database.ref(`games/${gameCode}/players`).on('value', (snapshot) => {
+                const players = snapshot.val() || {};
+                const listEl = document.getElementById('playerLobbyList');
+                listEl.innerHTML = '';
+
+                Object.entries(players).forEach(([id, player]) => {
+                    const li = document.createElement('li');
+                    li.className = 'player-item';
+                    li.textContent = player.name;
+                    listEl.appendChild(li);
+                });
+            });
+        }
+
+        function listenForGameStart() {
+            database.ref(`games/${gameCode}/status`).on('value', (snapshot) => {
+                const status = snapshot.val();
+                if (status === 'playing') {
+                    startGameplay();
+                }
+            });
+        }
+
+        // === DISCONNECT HANDLING ===
+
+        function setupDisconnectHandler() {
+            const playerRef = database.ref(`games/${gameCode}/players/${playerId}`);
+
+            connectedRef.on('value', (snap) => {
+                if (snap.val() === true) {
+                    playerRef.child('connected').set(true);
+                    playerRef.child('connected').onDisconnect().set(false);
+                    playerRef.child('lastSeen').onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
+                }
+            });
+        }
+
+        // === GAME LOOP ===
+
+        async function startGameplay() {
+            const loaded = questions.length > 0 || await loadQuestions(selectedQuizFile);
+            if (!loaded) return;
+
+            showScreen('gameScreen');
+
+            // Show/hide host controls
+            if (isHost) {
+                document.getElementById('hostControls').classList.remove('hidden');
+            }
+
+            // Listen to game state
+            listenToGameState();
+        }
+
+        function listenToGameState() {
+            const gameRef = database.ref(`games/${gameCode}`);
+
+            // Listen to current question
+            gameRef.child('currentQuestion').on('value', (snapshot) => {
+                const newQuestionIndex = snapshot.val() || 0;
+                console.log('Question index changed from', currentQuestionIndex, 'to', newQuestionIndex);
+                currentQuestionIndex = newQuestionIndex;
+                displayQuestion();
+            });
+
+            // Listen to timer
+            gameRef.child('timerStartedAt').on('value', (snapshot) => {
+                const timerStart = snapshot.val();
+                console.log('timerStartedAt changed:', timerStart, 'current:', currentTimerStart, 'different?', timerStart !== currentTimerStart);
+
+                // Only start timer if it's a new timestamp (prevents duplicate timers)
+                if (timerStart && timerStart !== currentTimerStart) {
+                    console.log('Starting timer - New timestamp:', new Date(timerStart).toLocaleTimeString(), 'Previous:', currentTimerStart ? new Date(currentTimerStart).toLocaleTimeString() : 'none');
+                    currentTimerStart = timerStart;
+                    startTimer(timerStart);
+                } else if (!timerStart) {
+                    console.log('Timer cleared (null value)');
+                } else {
+                    console.log('Ignoring duplicate timer timestamp');
+                }
+            });
+
+            // Listen to status changes
+            gameRef.child('status').on('value', (snapshot) => {
+                const status = snapshot.val();
+
+                if (status === 'showing-scores') {
+                    showScoreScreen();
+                } else if (status === 'ended') {
+                    showFinalResults();
+                } else if (status === 'playing') {
+                    console.log('Status changed to playing - showing game screen');
+                    showScreen('gameScreen');
+                    // Only refresh question display if needed (not when initially starting)
+                    // displayQuestion is already called by currentQuestion listener
+                    // Show host controls if host
+                    if (isHost) {
+                        document.getElementById('hostControls').classList.remove('hidden');
+                    }
+                }
+            });
+
+            // Host: Monitor answer count
+            if (isHost) {
+                monitorAnswers();
+            }
+        }
+
+        function displayQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                return;
+            }
+
+            console.log('Displaying question', currentQuestionIndex + 1);
+
+            const question = questions[currentQuestionIndex];
+
+            // Update UI
+            document.getElementById('questionCounter').textContent =
+                `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+            document.getElementById('questionText').textContent = question.question;
+
+            // Update answer buttons
+            const answerButtons = document.querySelectorAll('.answer-btn');
+            answerButtons.forEach((btn, index) => {
+                btn.textContent = question.options[index];
+                btn.disabled = false;
+                btn.classList.remove('selected', 'correct', 'incorrect');
+                btn.onclick = () => submitAnswer(index);
+            });
+
+            // DON'T clear timer here - it may have just started!
+            // Timer will be cleared when score screen shows
+
+            // Reset answer status
+            playerAnswer = null;
+            // DON'T reset currentTimerStart here - we need it to track the active timer
+            document.getElementById('answerStatus').classList.add('hidden');
+            document.getElementById('nextQuestionBtn').classList.add('hidden');
+        }
+
+        function startTimer(timerStartedAt) {
+            // CRITICAL: Clear any existing timer first
+            if (activeTimerInterval) {
+                console.log('Clearing existing timer interval');
+                clearInterval(activeTimerInterval);
+                activeTimerInterval = null;
+            }
+
+            console.log('Starting NEW timer at', new Date(timerStartedAt).toLocaleTimeString(), 'with duration:', timerDuration, 'seconds');
+            console.log('Current time:', Date.now(), 'Timer start:', timerStartedAt, 'Server offset:', serverTimeOffset);
+
+            const timerDisplay = document.getElementById('timerDisplay');
+            let hasExpired = false; // Prevent multiple expirations
+
+            const updateTimer = () => {
+                const estimatedServerTime = Date.now() + serverTimeOffset;
+                const elapsedMs = estimatedServerTime - timerStartedAt;
+                const remainingTime = Math.max(0, timerDuration - elapsedMs / 1000);
+
+                const seconds = Math.ceil(remainingTime);
+                console.log('Timer update - Elapsed:', (elapsedMs / 1000).toFixed(1), 's, Remaining:', seconds, 's');
+                timerDisplay.textContent = seconds;
+
+                // Warning color when < 10 seconds
+                if (seconds <= 10) {
+                    timerDisplay.classList.add('warning');
+                } else {
+                    timerDisplay.classList.remove('warning');
+                }
+
+                // Disable answers when time expires
+                if (remainingTime <= 0 && !hasExpired) {
+                    console.log('Timer expired!');
+                    hasExpired = true;
+                    disableAnswerButtons();
+
+                    // Clear this timer
+                    if (activeTimerInterval) {
+                        clearInterval(activeTimerInterval);
+                        activeTimerInterval = null;
+                    }
+
+                    // Host: Auto-advance after 3 seconds (to show correct/incorrect feedback)
+                    if (isHost && !isAdvancing) {
+                        setTimeout(() => advanceToNextQuestion(), 3000);
+                    }
+                }
+            };
+
+            // Update immediately and every second
+            console.log('Calling initial timer update');
+            updateTimer();
+            console.log('Starting interval');
+            activeTimerInterval = setInterval(updateTimer, 1000);
+            console.log('Interval ID:', activeTimerInterval);
+        }
+
+        function disableAnswerButtons() {
+            const answerButtons = document.querySelectorAll('.answer-btn');
+            const correctAnswer = questions[currentQuestionIndex].correct;
+
+            answerButtons.forEach((btn, index) => {
+                btn.disabled = true;
+
+                // Show correct answer
+                if (index === correctAnswer) {
+                    btn.classList.add('correct');
+                }
+
+                // Show player's wrong answer if they selected one
+                if (playerAnswer !== null && index === playerAnswer && playerAnswer !== correctAnswer) {
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            // Update status message
+            const statusEl = document.getElementById('answerStatus');
+            if (playerAnswer === null) {
+                statusEl.className = 'status-message warning';
+                statusEl.textContent = 'Time\'s up! You didn\'t select an answer.';
+            } else if (playerAnswer === correctAnswer) {
+                statusEl.className = 'status-message success';
+                statusEl.textContent = '✓ Correct! Well done!';
+            } else {
+                statusEl.className = 'status-message error';
+                statusEl.textContent = '✗ Incorrect. The correct answer is highlighted in green.';
+            }
+            statusEl.classList.remove('hidden');
+        }
+
+        // === ANSWER SUBMISSION ===
+
+        async function submitAnswer(answerIndex) {
+            playerAnswer = answerIndex;
+
+            // Update button styling - remove old selection, add new
+            const answerButtons = document.querySelectorAll('.answer-btn');
+            answerButtons.forEach((btn, index) => {
+                btn.classList.remove('selected');
+                if (index === answerIndex) {
+                    btn.classList.add('selected');
+                }
+            });
+
+            // Submit to Firebase (will overwrite previous answer if changed)
+            try {
+                await database.ref(`games/${gameCode}/answers/${currentQuestionIndex}/${playerId}`).set({
+                    answer: answerIndex,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                // Show message that answer can be changed
+                const statusEl = document.getElementById('answerStatus');
+                statusEl.className = 'status-message info';
+                statusEl.textContent = 'Answer selected! You can change your answer until time runs out.';
+                statusEl.classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Error submitting answer:', error);
+                showError('Failed to submit answer. Please try again.');
+            }
+        }
+
+        // === HOST CONTROLS ===
+
+        function monitorAnswers() {
+            database.ref(`games/${gameCode}/answers/${currentQuestionIndex}`).on('value', (snapshot) => {
+                const answers = snapshot.val() || {};
+                const answerCount = Object.keys(answers).length;
+
+                // Get total connected players
+                database.ref(`games/${gameCode}/players`).once('value', (playersSnap) => {
+                    const players = playersSnap.val() || {};
+                    const connectedPlayers = Object.values(players).filter(p => p.connected).length;
+
+                    document.getElementById('answeredCount').textContent = answerCount;
+                    document.getElementById('totalPlayers').textContent = connectedPlayers;
+
+                    // No auto-advance - wait for timer to expire so players can change answers
+                });
+            });
+        }
+
+        function advanceToNextQuestion() {
+            if (isAdvancing) return;
+            isAdvancing = true;
+
+            const questionRef = database.ref(`games/${gameCode}/currentQuestion`);
+
+            questionRef.transaction((current) => {
+                if (current === null) return 0;
+                return current + 1;
+            }, async (error, committed, snapshot) => {
+                if (error) {
+                    console.error('Transaction failed:', error);
+                    isAdvancing = false;
+                    return;
+                }
+
+                if (committed) {
+                    const newQuestion = snapshot.val();
+                    const justCompletedQuestion = newQuestion - 1;
+
+                    // Calculate scores for the question that was just completed
+                    await calculateScores(justCompletedQuestion);
+
+                    // Check if game ended
+                    if (newQuestion >= questions.length) {
+                        await database.ref(`games/${gameCode}/status`).set('ended');
+                    } else {
+                        // Show scores
+                        await database.ref(`games/${gameCode}/status`).set('showing-scores');
+                    }
+                }
+
+                setTimeout(() => { isAdvancing = false; }, 1000);
+            });
+        }
+
+        async function calculateScores(questionIndex) {
+            try {
+                const answersSnap = await database.ref(`games/${gameCode}/answers/${questionIndex}`).once('value');
+                const answers = answersSnap.val() || {};
+                const correctAnswer = questions[questionIndex].correct;
+
+                const playersSnap = await database.ref(`games/${gameCode}/players`).once('value');
+                const players = playersSnap.val() || {};
+
+                // Update scores
+                const updates = {};
+                Object.entries(players).forEach(([id, player]) => {
+                    const playerAnswerData = answers[id];
+                    let newScore = player.score || 0;
+
+                    if (playerAnswerData && playerAnswerData.answer === correctAnswer) {
+                        newScore += 10;
+                    }
+
+                    updates[`games/${gameCode}/players/${id}/score`] = newScore;
+                });
+
+                await database.ref().update(updates);
+
+            } catch (error) {
+                console.error('Error calculating scores:', error);
+            }
+        }
+
+        // === SCORE DISPLAY ===
+
+        async function showScoreScreen() {
+            showScreen('scoreScreen');
+
+            // Clear active timer
+            if (activeTimerInterval) {
+                clearInterval(activeTimerInterval);
+                activeTimerInterval = null;
+            }
+            currentTimerStart = null; // Reset to allow new timer
+
+            // Show correct answer for the PREVIOUS question (currentQuestionIndex has been incremented)
+            const previousQuestionIndex = currentQuestionIndex - 1;
+            const question = questions[previousQuestionIndex];
+            const correctAnswerText = question.options[question.correct];
+
+            // Check player's answer
+            const answersSnap = await database.ref(`games/${gameCode}/answers/${previousQuestionIndex}`).once('value');
+            const answers = answersSnap.val() || {};
+            const myAnswer = answers[playerId];
+
+            let feedbackHtml = '';
+            if (!myAnswer) {
+                feedbackHtml = `<div class="status-message warning" style="margin-bottom: 20px;">⏱️ <strong>Time's up!</strong> You didn't select an answer.</div>`;
+            } else if (myAnswer.answer === question.correct) {
+                feedbackHtml = `<div class="status-message success" style="margin-bottom: 20px;">✓ <strong>Correct!</strong> You selected: ${correctAnswerText}</div>`;
+            } else {
+                const yourAnswerText = question.options[myAnswer.answer];
+                feedbackHtml = `<div class="status-message error" style="margin-bottom: 20px;">✗ <strong>Incorrect.</strong> You selected: ${yourAnswerText}<br>Correct answer: ${correctAnswerText}</div>`;
+            }
+
+            document.getElementById('correctAnswerDisplay').innerHTML = feedbackHtml;
+
+            // Display leaderboard
+            await displayLeaderboard('currentLeaderboard');
+
+            // Show appropriate controls
+            if (isHost) {
+                document.getElementById('scoreHostControls').classList.remove('hidden');
+                document.getElementById('scorePlayerWaiting').classList.add('hidden');
+            } else {
+                document.getElementById('scoreHostControls').classList.add('hidden');
+                document.getElementById('scorePlayerWaiting').classList.remove('hidden');
+            }
+        }
+
+        async function displayLeaderboard(elementId) {
+            const playersSnap = await database.ref(`games/${gameCode}/players`).once('value');
+            const players = playersSnap.val() || {};
+
+            // Sort by score
+            const sortedPlayers = Object.entries(players)
+                .sort(([, a], [, b]) => (b.score || 0) - (a.score || 0));
+
+            const leaderboardEl = document.getElementById(elementId);
+            leaderboardEl.innerHTML = '';
+
+            sortedPlayers.forEach(([id, player], index) => {
+                const div = document.createElement('div');
+                div.className = 'leaderboard-item';
+
+                if (index === 0) div.classList.add('rank-1');
+                else if (index === 1) div.classList.add('rank-2');
+                else if (index === 2) div.classList.add('rank-3');
+
+                div.innerHTML = `
+                    <div>
+                        <span class="rank-number">#${index + 1}</span>
+                        <span class="player-name">${player.name}</span>
+                        ${!player.connected ? ' <em>(Disconnected)</em>' : ''}
+                    </div>
+                    <span class="player-score">${player.score || 0} pts</span>
+                `;
+
+                leaderboardEl.appendChild(div);
+            });
+        }
+
+        // === FINAL RESULTS ===
+
+        async function showFinalResults() {
+            showScreen('resultsScreen');
+
+            // Clear active timer
+            if (activeTimerInterval) {
+                clearInterval(activeTimerInterval);
+                activeTimerInterval = null;
+            }
+            currentTimerStart = null; // Reset timer tracking
+
+            // Display winner
+            const playersSnap = await database.ref(`games/${gameCode}/players`).once('value');
+            const players = playersSnap.val() || {};
+            const sortedPlayers = Object.entries(players)
+                .sort(([, a], [, b]) => (b.score || 0) - (a.score || 0));
+
+            if (sortedPlayers.length > 0) {
+                const winner = sortedPlayers[0][1];
+                document.getElementById('winnerAnnouncement').innerHTML =
+                    `<h2>🏆 Winner: ${winner.name}</h2><p>Score: ${winner.score || 0} points</p>`;
+            }
+
+            // Display final leaderboard
+            await displayLeaderboard('finalLeaderboard');
+
+            // Show appropriate controls
+            if (isHost) {
+                document.getElementById('resultsHostControls').classList.remove('hidden');
+                document.getElementById('resultsPlayerView').classList.add('hidden');
+            } else {
+                document.getElementById('resultsHostControls').classList.add('hidden');
+                document.getElementById('resultsPlayerView').classList.remove('hidden');
+            }
+        }
+
+        // === EVENT LISTENERS ===
+
+        document.getElementById('startGameBtn').addEventListener('click', async () => {
+            console.log('Start game button clicked - resetting timer tracking');
+            currentTimerStart = null; // Reset before starting timer
+            await database.ref(`games/${gameCode}/status`).set('playing');
+            await database.ref(`games/${gameCode}/timerStartedAt`).set(firebase.database.ServerValue.TIMESTAMP);
+            startGameplay();
+        });
+
+        document.getElementById('submitJoinBtn').addEventListener('click', joinGame);
+
+        document.getElementById('continueBtn').addEventListener('click', async () => {
+            console.log('Continue button clicked - resetting timer tracking');
+            currentTimerStart = null; // Reset before starting new timer
+            await database.ref(`games/${gameCode}/status`).set('playing');
+            await database.ref(`games/${gameCode}/timerStartedAt`).set(firebase.database.ServerValue.TIMESTAMP);
+        });
+
+        document.getElementById('newGameBtn').addEventListener('click', () => {
+            window.location.href = window.location.pathname;
+        });
+
+        document.getElementById('copyUrlBtn').addEventListener('click', () => {
+            const url = document.getElementById('shareUrlDisplay').textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = document.getElementById('copyUrlBtn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(() => {
+                showError('Failed to copy URL. Please copy manually.');
+            });
+        });
+
+        document.getElementById('cancelHostBtn').addEventListener('click', () => {
+            window.location.href = window.location.pathname;
+        });
+
+        document.getElementById('cancelJoinBtn').addEventListener('click', () => {
+            window.location.href = window.location.pathname;
+        });
+
+        // Initialize app
+        (function init() {
+            // Check URL for game code
+            const urlParams = new URLSearchParams(window.location.search);
+            const codeFromUrl = urlParams.get('game');
+
+            if (codeFromUrl) {
+                gameCode = codeFromUrl.toUpperCase();
+                document.getElementById('joinGameBtn').click();
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+{
+  "questions": [
+    {
+      "question": "What does SQL stand for?",
+      "options": [
+        "Structured Query Language",
+        "Simple Question Language",
+        "Standard Query Logic",
+        "Sequential Query Language"
+      ],
+      "correct": 0
+    },
+    {
+      "question": "Which Python library is primarily used for data manipulation and analysis?",
+      "options": [
+        "NumPy",
+        "Pandas",
+        "Matplotlib",
+        "Scikit-learn"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "What is the purpose of cross-validation in machine learning?",
+      "options": [
+        "To increase model complexity",
+        "To evaluate model performance on unseen data",
+        "To reduce training time",
+        "To visualize data distributions"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "In statistics, what does 'p-value' represent?",
+      "options": [
+        "The probability of the population mean",
+        "The power of the statistical test",
+        "The probability of observing the data given the null hypothesis is true",
+        "The percentage of variance explained"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "Which algorithm is used for dimensionality reduction?",
+      "options": [
+        "Linear Regression",
+        "Principal Component Analysis (PCA)",
+        "K-Means Clustering",
+        "Random Forest"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "What is overfitting in machine learning?",
+      "options": [
+        "When a model performs poorly on training data",
+        "When a model is too simple to capture patterns",
+        "When a model performs well on training data but poorly on new data",
+        "When there is too much data for the model"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "Which visualization library in Python is built on top of Matplotlib?",
+      "options": [
+        "Plotly",
+        "Seaborn",
+        "Bokeh",
+        "ggplot"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "What type of machine learning is used when the model learns from labeled data?",
+      "options": [
+        "Unsupervised learning",
+        "Reinforcement learning",
+        "Supervised learning",
+        "Semi-supervised learning"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "In a confusion matrix, what does 'True Positive' represent?",
+      "options": [
+        "Correctly predicted negative cases",
+        "Incorrectly predicted positive cases",
+        "Correctly predicted positive cases",
+        "Incorrectly predicted negative cases"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "What is the primary purpose of the 'train-test split' in machine learning?",
+      "options": [
+        "To increase dataset size",
+        "To evaluate model performance on unseen data",
+        "To reduce computational cost",
+        "To balance class distributions"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "Which measure of central tendency is most affected by outliers?",
+      "options": [
+        "Median",
+        "Mode",
+        "Mean",
+        "Range"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "What does API stand for in software development?",
+      "options": [
+        "Application Programming Interface",
+        "Advanced Programming Integration",
+        "Automated Process Implementation",
+        "Application Process Identifier"
+      ],
+      "correct": 0
+    },
+    {
+      "question": "In data science, what is 'feature engineering'?",
+      "options": [
+        "Removing outliers from data",
+        "Creating new variables from existing data",
+        "Selecting the best machine learning algorithm",
+        "Visualizing data distributions"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "Which of the following is NOT a type of database?",
+      "options": [
+        "Relational",
+        "NoSQL",
+        "Graph",
+        "Linear"
+      ],
+      "correct": 3
+    },
+    {
+      "question": "What is the main advantage of using ensemble methods in machine learning?",
+      "options": [
+        "Faster training time",
+        "Simpler model interpretation",
+        "Improved prediction accuracy by combining multiple models",
+        "Reduced data requirements"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "Which of the following is a measure of model performance for classification tasks?",
+      "options": [
+        "Mean Squared Error (MSE)",
+        "R-squared",
+        "F1 Score",
+        "Mean Absolute Error (MAE)"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "What does ETL stand for in data engineering?",
+      "options": [
+        "Extract, Transform, Load",
+        "Evaluate, Test, Launch",
+        "Export, Transfer, Link",
+        "Encode, Translate, Log"
+      ],
+      "correct": 0
+    },
+    {
+      "question": "In deep learning, what is a 'neuron' in a neural network?",
+      "options": [
+        "A data preprocessing step",
+        "A computational unit that receives inputs and produces an output",
+        "A type of activation function",
+        "A method for regularization"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "Which technique is used to prevent overfitting by randomly dropping neurons during training?",
+      "options": [
+        "Batch normalization",
+        "Dropout",
+        "Gradient descent",
+        "Pooling"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "What is the purpose of A/B testing in data science?",
+      "options": [
+        "To clean and preprocess data",
+        "To compare two versions and determine which performs better",
+        "To visualize complex datasets",
+        "To reduce dimensionality"
+      ],
+      "correct": 1
+    }
+  ]
+}
