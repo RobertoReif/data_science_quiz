@@ -190,11 +190,13 @@ select {
 .answer-btn.correct {
     border-color: #4CAF50;
     background-color: #f1f8f4;
+    border-width: 3px;
 }
 
 .answer-btn.incorrect {
-    border-color: #e57373;
-    background-color: #fef5f5;
+    border-color: #f44336;
+    background-color: #ffebee;
+    border-width: 3px;
 }
 
 /* Timer */
