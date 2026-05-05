@@ -19,6 +19,7 @@ let gameCode = null;
 let playerId = null;
 let playerName = null;
 let isHost = false;
+let hostIsPlaying = false; // Track if host is also a player
 let questions = [];
 let currentQuestionIndex = 0;
 let serverTimeOffset = 0;
@@ -197,6 +198,9 @@ document.getElementById('createGameBtn').addEventListener('click', async () => {
     }
     timerDuration = timerValidation.value;
 
+    // Check if host wants to play
+    hostIsPlaying = document.getElementById('hostPlaysCheckbox').checked;
+
     const loaded = await loadQuestions(selectedQuizFile);
     if (!loaded) return;
 
@@ -240,16 +244,18 @@ async function createGame() {
             }
         });
 
-        // Add host as first player
-        playerName = 'Host';
-        await database.ref(`games/${gameCode}/players/${playerId}`).set({
-            name: playerName,
-            score: 0,
-            connected: true
-        });
+        // Add host as player only if they chose to play
+        if (hostIsPlaying) {
+            playerName = 'Host';
+            await database.ref(`games/${gameCode}/players/${playerId}`).set({
+                name: playerName,
+                score: 0,
+                connected: true
+            });
 
-        // Set up disconnect handler
-        setupDisconnectHandler();
+            // Set up disconnect handler
+            setupDisconnectHandler();
+        }
 
         // Display game code and URL
         document.getElementById('gameCodeDisplay').textContent = gameCode;
@@ -284,6 +290,15 @@ function listenForPlayers() {
         // Update player list
         const listEl = document.getElementById('hostPlayerList');
         listEl.innerHTML = '';
+
+        // If host is not playing, show a message
+        if (!hostIsPlaying && playerCount === 0) {
+            const li = document.createElement('li');
+            li.className = 'player-item';
+            li.style.fontStyle = 'italic';
+            li.textContent = 'Waiting for players to join...';
+            listEl.appendChild(li);
+        }
 
         Object.entries(players).forEach(([id, player]) => {
             const li = document.createElement('li');
@@ -529,14 +544,24 @@ function displayQuestion() {
     const answerButtons = document.querySelectorAll('.answer-btn');
     answerButtons.forEach((btn, index) => {
         btn.textContent = question.options[index];
-        btn.disabled = false;
+        // Disable buttons if host is not playing
+        btn.disabled = isHost && !hostIsPlaying;
         btn.classList.remove('selected', 'correct', 'incorrect');
         btn.onclick = () => submitAnswer(index);
     });
 
     // Reset answer status
     playerAnswer = null;
-    document.getElementById('answerStatus').classList.add('hidden');
+    const answerStatus = document.getElementById('answerStatus');
+    answerStatus.classList.add('hidden');
+
+    // Show spectator message if host is not playing
+    if (isHost && !hostIsPlaying) {
+        answerStatus.className = 'status-message info';
+        answerStatus.textContent = 'You are spectating this game';
+        answerStatus.classList.remove('hidden');
+    }
+
     document.getElementById('nextQuestionBtn').classList.add('hidden');
 }
 
@@ -608,7 +633,12 @@ function disableAnswerButtons() {
 
     // Update status message
     const statusEl = document.getElementById('answerStatus');
-    if (playerAnswer === null) {
+
+    // If host is not playing, just show spectator message
+    if (isHost && !hostIsPlaying) {
+        statusEl.className = 'status-message info';
+        statusEl.textContent = 'You are spectating this game';
+    } else if (playerAnswer === null) {
         statusEl.className = 'status-message warning';
         statusEl.textContent = 'Time\'s up! You didn\'t select an answer.';
     } else if (playerAnswer === correctAnswer) {
